@@ -1,0 +1,100 @@
+CREATE TABLE users (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    full_name VARCHAR NOT NULL,
+    email VARCHAR NOT NULL UNIQUE,
+    phone VARCHAR,
+    role VARCHAR,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE sellers (
+    user_id INTEGER PRIMARY KEY REFERENCES users (id) ON DELETE RESTRICT,
+    store_name VARCHAR NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE categories (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    parent_id INTEGER REFERENCES categories (id) ON DELETE RESTRICT,
+    name VARCHAR NOT NULL UNIQUE
+);
+
+CREATE TABLE products (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    seller_id INTEGER NOT NULL REFERENCES sellers (id) ON DELETE RESTRICT,
+    category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
+    title VARCHAR NOT NULL,
+    description TEXT,
+    price NUMERIC(12, 2) NOT NULL CHECK (price > 0),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE stock (
+    product_id INTEGER REFERENCES products (id) PRIMARY KEY,
+    quantity INTEGER NOT NULL CHECK (quantity >= 0),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+create TABLE carts (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+create TABLE cart_items (
+    cart_id INTEGER NOT NULL REFERENCES carts (id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    PRIMARY KEY (cart_id, product_id)
+);
+
+CREATE TABLE orders (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    status VARCHAR NOT NULL,
+    total_amount NUMERIC(12, 2) NOT NULL CHECK (total_amount > 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE order_items (
+    order_id INTEGER NOT NULL REFERENCES orders (id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE RESTRICT,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    unit_price NUMERIC(12, 2) NOT NULL CHECK (unit_price > 0),
+    PRIMARY KEY (order_id, product_id)
+);
+
+CREATE TABLE payments (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    order_id INTEGER NOT NULL UNIQUE REFERENCES orders (id),
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    status VARCHAR NOT NULL,
+    paid_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE reviews (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id),
+    product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+    score INTEGER NOT NULL CHECK (BETWEEN 1 AND 5),
+    comment TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE addresses (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    city VARCHAR,
+    street VARCHAR,
+    house VARCHAR,
+    apartment VARCHAR
+);
+
+CREATE TABLE deliveries (
+    order_id INTEGER PRIMARY KEY REFERENCES orders (id) ON DELETE RESTRICT,
+    address_id INTEGER NOT NULL REFERENCES addresses (id) ON DELETE RESTRICT,
+    delivery_status VARCHAR NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
