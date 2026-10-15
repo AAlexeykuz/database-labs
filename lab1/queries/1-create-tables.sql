@@ -37,13 +37,13 @@ CREATE TABLE stock (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-create TABLE carts (
+CREATE TABLE carts (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-create TABLE cart_items (
+CREATE TABLE cart_items (
     cart_id INTEGER NOT NULL REFERENCES carts (id) ON DELETE CASCADE,
     product_id INTEGER NOT NULL REFERENCES products (id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
