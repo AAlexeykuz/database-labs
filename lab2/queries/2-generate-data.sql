@@ -80,10 +80,10 @@ FROM (
 INSERT INTO
     orders (user_id, status, total_amount)
 SELECT id, (
-        SELECT val
+        SELECT t
         FROM (
                 VALUES ('Собирается'), ('В доставке'), ('Доставлен'), ('Отменён')
-            ) AS t (val)
+            ) AS t
         WHERE
             id IS NOT NULL
         ORDER BY RANDOM()
