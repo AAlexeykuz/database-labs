@@ -17,6 +17,8 @@ VALUES ('Электроника'),
     ('Книги'),
     ('Одежда');
 
+INSERT INTO categories (name, parent_id) VALUES ('Телефоны', 1)
+
 INSERT INTO
     products (
         seller_id,
